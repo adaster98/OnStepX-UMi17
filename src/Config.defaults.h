@@ -18,6 +18,35 @@
 #endif
 
 // use the HAL specified default NV driver
+// POSITION JOURNAL and ABSOLUTE POSITION SAFETY -----------------------------------------------------
+#ifndef JOURNAL
+#define JOURNAL                       OFF                         // append-only position/event journal in its own flash partition
+#endif
+#ifndef JOURNAL_PARTITION
+#define JOURNAL_PARTITION             "journal"                   // partition label to use
+#endif
+#ifndef JOURNAL_RUNWAY_SECTORS
+#define JOURNAL_RUNWAY_SECTORS        16                          // sectors kept pre-erased ahead of the frontier (~11 h of tracking)
+#endif
+#ifndef JOURNAL_HEARTBEAT_SECONDS
+#define JOURNAL_HEARTBEAT_SECONDS     10                          // position heartbeat while tracking; bounds post-power-cut error
+#endif
+#ifndef JOURNAL_FLIGHT_RECORDER
+#define JOURNAL_FLIGHT_RECORDER       OFF                         // also log state changes and errors to the journal
+#endif
+#ifndef JOURNAL_RESTORE
+#define JOURNAL_RESTORE               OFF                         // apply the journalled position at boot
+#endif
+#ifndef APS
+#define APS                           OFF                         // absolute position safety limits, enforced from the journal
+#endif
+#ifndef APS_AXIS1_MAX_DEG
+#define APS_AXIS1_MAX_DEG             200.0                       // absolute axis1 backstop, wider than the normal limits
+#endif
+#ifndef APS_AXIS2_MAX_DEG
+#define APS_AXIS2_MAX_DEG             100.0                       // absolute axis2 backstop, wider than the normal limits
+#endif
+
 #ifndef NV_DRIVER
 #define NV_DRIVER                     NV_DEFAULT
 #endif

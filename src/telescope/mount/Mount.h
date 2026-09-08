@@ -99,6 +99,15 @@ class Mount {
     // true if syncing only from OnStep to the Encoders
     bool syncFromOnStepToEncoders = false;
 
+    #if JOURNAL == ON
+      void journalPoll();
+      unsigned long journalLastWrite = 0;
+      bool journalLastTracking = false;
+      bool journalLastSlewing = false;
+      bool apsTripped = false;
+      uint8_t journalLastPark = 255;   // 255 = unknown, forces a record on first poll
+    #endif
+
     void captureNominalIndexPositions();
     long getNominalIndexPositionSteps(uint8_t axisNumber) const;
 

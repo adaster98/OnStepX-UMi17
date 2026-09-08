@@ -21,6 +21,9 @@
 #include "st4/St4.h"
 #include "startupAuthority/StartupAuthority.h"
 #include "status/Status.h"
+#if JOURNAL == ON
+  #include "../../lib/journal/Journal.h"
+#endif
 
 #if MOUNT_COORDS_MEMORY == ON && (NV_DRIVER != NV_MB85RC32 && NV_DRIVER != NV_MB85RC64 && NV_DRIVER != NV_MB85RC256)
   #error "Configuration (Config.h): Setting MOUNT_COORDS_MEMORY requires a NV storage device with very high write endurance (FRAM)"
@@ -219,6 +222,40 @@ void Mount::begin() {
 
   VF("MSG: Mount, start tracking monitor task (rate 1000ms priority 6)... ");
   if (tasks.add(1000, 0, true, 6, mountWrapper, "MtTrack")) { VLF("success"); } else { VLF("FAILED!"); }
+
+  #if JOURNAL == ON
+    if (journal.init()) {
+      #if JOURNAL_RESTORE == ON
+        if (journal.haveRestored()) {
+          // Safe here because the RA brake engages when power is off and a 500:1
+          // harmonic drive is not back-drivable, so the axes cannot have moved.
+          // Position is restored; tracking is deliberately NOT resumed, so the
+          // mount comes back idle and unparked but knowing where it is.
+          float ja1 = journal.restored.a1;
+          float ja2 = journal.restored.a2;
+          bool wasTracking = (journal.restored.flags & 0x02) != 0;
+          if (limits.validateInstrumentCoordinate(1, ja1, true) == CE_NONE &&
+              limits.validateInstrumentCoordinate(2, ja2, true) == CE_NONE) {
+            CommandError e = limits.setInstrumentCoordinate(1, ja1, true);
+            if (e == CE_NONE) e = limits.setInstrumentCoordinate(2, ja2, true);
+            if (e == CE_NONE) {
+              captureNominalIndexPositions();
+              syncFromOnStepToEncoders = true;
+              startupAuthority.setTrusted(true);
+              VF("MSG: Mount, position restored from journal a1="); V(radToDeg(ja1));
+              VF(" a2="); V(radToDeg(ja2));
+              VL(wasTracking ? " (was tracking; not resuming)" : "");
+            } else { DF("WRN: Mount, journal restore rejected (code "); D(e); DLF(")"); }
+          } else {
+            DLF("WRN: Mount, journalled position outside limits - ignored");
+          }
+        }
+      #endif
+      #if JOURNAL_FLIGHT_RECORDER == ON
+        journal.writeEvent(JE_BOOT, 0);
+      #endif
+    }
+  #endif
 
   update();
   autostart();
@@ -420,6 +457,10 @@ void Mount::update() {
 }
 
 void Mount::poll() {
+  #if JOURNAL == ON
+    journalPoll();
+  #endif
+
   #if NV_INIT_ERROR_REVOKES_AUTHORITY == ON
     if (initError.nv && startupAuthority.trusted()) {
       startupAuthority.setTrusted(false);
@@ -612,6 +653,88 @@ void Mount::updatePosition(CoordReturn coordReturn) {
     if (coordReturn == CR_MOUNT_HOR || coordReturn == CR_MOUNT_ALL) transform.equToHor(&current);
   }
 }
+
+#if JOURNAL == ON
+// Journal heartbeat, runway maintenance and absolute position safety.
+// Kept in one place and called from poll() so the rest of Mount is untouched.
+void Mount::journalPoll() {
+  if (!journal.ready()) return;
+
+  bool trk = isTracking();
+  bool slw = isSlewing();
+  // Erase only ever happens here, and only when the mount is genuinely idle.
+  // Not just "not tracking": during a slew the motion controller is ramping
+  // velocity from a task that runs out of flash, so a ~64ms cache stall could
+  // put a step in the wrong place at 250 RPM. A GEM has to meridian flip, and
+  // the settle between the flip completing and tracking resuming is a real
+  // window, as are park, unpark and the gaps between targets.
+  bool idle = !trk && !slw;
+  journal.maintain(idle);
+
+  double a1 = axis1.getInstrumentCoordinate();
+  double a2 = axis2.getInstrumentCoordinate();
+
+  #if APS == ON
+    // Absolute backstops on the raw axis coordinates, independent of the
+    // coordinate transforms and of home. Deliberately wider than the normal
+    // limits so they only ever catch a genuine runaway. A home-relative window
+    // would false-trip in normal use, because home is at axis1 = +90 while
+    // tracking sweeps axis1 down through -90.
+    double d1 = radToDeg(a1);
+    double d2 = radToDeg(a2);
+    bool trip = (fabs(d1) > (double)(APS_AXIS1_MAX_DEG)) ||
+                (fabs(d2) > (double)(APS_AXIS2_MAX_DEG));
+    if (trip) {
+      if (!apsTripped) {
+        apsTripped = true;
+        DF("WRN: Mount, APS backstop tripped, axis1 "); D(d1); DF(" axis2 "); D(d2); DLF(" deg");
+        #if JOURNAL_FLIGHT_RECORDER == ON
+          journal.writeEvent(JE_APS_TRIP, (uint32_t)(int32_t)d1);
+        #endif
+        axis1.autoSlewAbort();
+        axis2.autoSlewAbort();
+        this->tracking(false);
+      }
+    } else apsTripped = false;
+  #endif
+
+  #if JOURNAL_FLIGHT_RECORDER == ON && GOTO_FEATURE == ON
+    // Watch park state here rather than hooking Park, which keeps the change
+    // contained and catches every path that parks or unparks.
+    uint8_t pk = (uint8_t)park.state;
+    if (pk != journalLastPark) {
+      if (pk == PS_PARKED) journal.writeEvent(JE_PARK, 0);
+      else if (journalLastPark == PS_PARKED) journal.writeEvent(JE_UNPARK, 0);
+      journalLastPark = pk;
+    }
+  #endif
+
+  // Heartbeat only while the position can actually be changing. Parked and
+  // stationary, the last record stays valid indefinitely, so writing every
+  // 10 s there would be thousands of records a day describing nothing.
+  // State changes are always recorded, so a power cut just after a slew or
+  // just after tracking stopped is still captured accurately.
+  unsigned long now = millis();
+  bool stateChanged = (trk != journalLastTracking) || (slw != journalLastSlewing);
+  bool moving = trk || slw;
+  if (stateChanged ||
+      (moving && now - journalLastWrite >= (unsigned long)(JOURNAL_HEARTBEAT_SECONDS) * 1000UL)) {
+    uint8_t flags = 0;
+    if (startupAuthority.trusted()) flags |= 0x01;
+    if (trk) flags |= 0x02;
+    flags |= (uint8_t)((transform.mountType & 0x0F) << 4);
+    journal.writePosition((float)a1, (float)a2, flags);
+    journalLastWrite = now;
+
+    #if JOURNAL_FLIGHT_RECORDER == ON
+      if (trk != journalLastTracking) journal.writeEvent(trk ? JE_TRACK_ON : JE_TRACK_OFF, 0);
+      if (slw != journalLastSlewing) journal.writeEvent(slw ? JE_SLEW_START : JE_SLEW_END, 0);
+    #endif
+    journalLastTracking = trk;
+    journalLastSlewing = slw;
+  }
+}
+#endif
 
 Mount mount;
 

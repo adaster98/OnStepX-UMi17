@@ -11,3 +11,15 @@ esp32.svd
 src/plugins/*
 debug.svd
 z.*
+
+# UMi 17 fork additions
+build/
+test/journal-sim/jsim
+test/journal-sim/Journal.cpp
+test/journal-sim/Journal.h
+__pycache__/
+*.pyc
+# board dumps and generated tables are board-specific; dumps contain BT pairing keys
+*-full-*.bin
+dump-*.bin
+umi17-partitions*.bin

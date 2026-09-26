@@ -288,9 +288,7 @@ than the normal limits, so a bad sync cannot drive a 500:1 strain wave into the 
   meridian limit beyond 20°, raise `APS_AXIS1_MAX_DEG` with it.
 - **Axis2** is checked as a declination, so 100° is 10° beyond the ±90° limits on either side
   of the pier. The raw axis2 angle passes through the pole to change sides and reads 180° −
-  Dec west of the pier, which is why it has to be converted first. Releases before
-  `v10.28x-umi17-2` compared the raw angle, and stopped the mount on any target west of the
-  pier below Dec +80°.
+  Dec west of the pier, which is why it has to be converted first.
 
 ---
 

@@ -279,10 +279,18 @@ Options in `Config.h`:
 | `JOURNAL_FLIGHT_RECORDER` | `ON` | also log boots, park/unpark, slews, limit trips |
 | `APS` | `ON` | absolute axis backstops, independent of coordinate transforms |
 
-`APS_AXIS1_MAX_DEG` and `APS_AXIS2_MAX_DEG` are hard limits enforced from the journalled
-axis angle, so a bad sync cannot drive a 500:1 strain wave into the tripod. They are
-**absolute**, not home-relative — home sits at axis1 +90° while tracking sweeps toward −90°,
-so home-relative limits would false-trip mid-session.
+`APS_AXIS1_MAX_DEG` and `APS_AXIS2_MAX_DEG` are hard limits on the axis positions, wider
+than the normal limits, so a bad sync cannot drive a 500:1 strain wave into the tripod.
+
+- **Axis1** is checked as the raw shaft angle, which is the hour angle east of the pier and
+  the hour angle plus 180° west of it. With the default 15° meridian limits it stays within
+  −15° to 195°, so 200° sits 20° past the meridian on the west side. If you widen the west
+  meridian limit beyond 20°, raise `APS_AXIS1_MAX_DEG` with it.
+- **Axis2** is checked as a declination, so 100° is 10° beyond the ±90° limits on either side
+  of the pier. The raw axis2 angle passes through the pole to change sides and reads 180° −
+  Dec west of the pier, which is why it has to be converted first. Releases before
+  `v10.28x-umi17-2` compared the raw angle, and stopped the mount on any target west of the
+  pier below Dec +80°.
 
 ---
 

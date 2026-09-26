@@ -65,14 +65,16 @@
 #define JOURNAL_RESTORE                ON //    OFF, ON Apply the journalled position at boot.                                Option
 
 // ABSOLUTE POSITION SAFETY --------------------------------------------------------------------------
-// Hard limits enforced from journalled axis positions, independent of the coordinate transforms, so a
-// bad sync or a coordinate bug cannot drive a 500:1 strain wave into the tripod.
-// These are BACKSTOPS, deliberately wider than AXIS1/2_LIMIT_MIN/MAX (-180/180 and -90/90). They exist
-// to catch a runaway when the normal limits have failed, so they must never trip in normal operation.
-// Note home sits at axis1 = +90, so a home-relative window would false-trip during ordinary tracking.
+// Hard limits on the axis positions, so a bad sync or a coordinate bug cannot drive a 500:1 strain wave
+// into the tripod. These are BACKSTOPS, deliberately wider than the normal limits. They exist to catch a
+// runaway when the normal limits have failed, so they must never trip in normal operation.
+// Axis1 is checked as the raw shaft angle: the hour angle east of the pier, hour angle + 180 west of it.
+// With the default 15 degree meridian limits it stays within -15..195, so 200 sits 20 degrees past the
+// meridian on the west side. Widen the west meridian limit beyond 20 degrees and this must rise with it.
+// Axis2 is checked as a declination, so 100 is 10 degrees beyond the -90/90 limits on either pier side.
 #define APS                            ON //    OFF, ON Absolute position safety limits.                                      Option
-#define APS_AXIS1_MAX_DEG           200.0 //  200.0, absolute axis1 backstop, beyond the -180/180 limits.                     Option
-#define APS_AXIS2_MAX_DEG           100.0 //  100.0, absolute axis2 backstop, beyond the -90/90 limits.                       Option
+#define APS_AXIS1_MAX_DEG           200.0 //  200.0, axis1 shaft angle backstop, 20 degrees past the meridian.                Option
+#define APS_AXIS2_MAX_DEG           100.0 //  100.0, declination backstop, beyond the -90/90 limits.                          Option
 
 // NON-VOLATILE MEMORY ---------------------------------------- see https://onstep.groups.io/g/main/wiki/Configuration_Controller#NV
 #define NV_DRIVER              NV_DEFAULT // NV_DEF, Use platforms default non-volatile device to remember runtime settings.  Option

@@ -675,13 +675,14 @@ void Mount::journalPoll() {
   double a2 = axis2.getInstrumentCoordinate();
 
   #if APS == ON
-    // Absolute backstops on the raw axis coordinates, independent of the
-    // coordinate transforms and of home. Deliberately wider than the normal
-    // limits so they only ever catch a genuine runaway. A home-relative window
-    // would false-trip in normal use, because home is at axis1 = +90 while
-    // tracking sweeps axis1 down through -90.
+    // Backstops, deliberately wider than the normal limits so they only ever
+    // catch a genuine runaway. Axis1 is the raw shaft angle: HA east of the pier
+    // and HA + 180 west of it, so with 15 degree meridian limits it stays within
+    // -15..195. Axis2 passes through the pole to change pier side, so west of the
+    // pier it reads 180 - Dec (-90..270) and is folded back to a declination
+    // first, using the same pier side rule as the rest of OnStepX.
     double d1 = radToDeg(a1);
-    double d2 = radToDeg(a2);
+    double d2 = radToDeg(transform.instrumentToMount(a1, a2).a2);
     bool trip = (fabs(d1) > (double)(APS_AXIS1_MAX_DEG)) ||
                 (fabs(d2) > (double)(APS_AXIS2_MAX_DEG));
     if (trip) {

@@ -41,10 +41,10 @@
 #define APS                           OFF                         // absolute position safety limits, enforced from the journal
 #endif
 #ifndef APS_AXIS1_MAX_DEG
-#define APS_AXIS1_MAX_DEG             200.0                       // absolute axis1 backstop, wider than the normal limits
+#define APS_AXIS1_MAX_DEG             200.0                       // axis1 shaft angle backstop, wider than the normal limits
 #endif
 #ifndef APS_AXIS2_MAX_DEG
-#define APS_AXIS2_MAX_DEG             100.0                       // absolute axis2 backstop, wider than the normal limits
+#define APS_AXIS2_MAX_DEG             100.0                       // declination backstop, wider than the normal limits
 #endif
 
 #ifndef NV_DRIVER

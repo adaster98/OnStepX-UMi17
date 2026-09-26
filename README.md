@@ -8,6 +8,10 @@ strain-wave mount, plus two things upstream does not have:
 - a **position journal** that survives power loss, so the mount knows where it is pointing
   after the power drops mid-session instead of needing a re-home
 
+**Added an FRAM chip to the RTC module?** Use the
+[`fram` branch](https://github.com/adaster98/OnStepX-UMi17/tree/fram) and its release instead:
+upstream's own coordinate memory, no journal, factory partition layout.
+
 The UMi 17 ships with Proxisky's OnStep 4.x build. This replaces it with OnStepX while
 leaving the factory bootloader and every factory partition offset untouched.
 

@@ -298,6 +298,10 @@ than the normal limits, so a bad sync cannot drive a 500:1 strain wave into the 
 
 ## Known limitations
 
+- **Slews top out at 1.4°/s**, not the factory 3°/s. The drivers stay at 64 microsteps whatever
+  the microstep pins say, so OnStepX cannot switch to a coarser mode for fast moves, and at 64
+  microsteps the ESP32's 40 µs step floor allows 1.4°/s. Earlier builds did switch, which made
+  every fast move a quarter of the distance counted; this is fixed.
 - **The buzzer does not work on one of my two boards.** A full GPIO sweep found no pin that
   drove it. Probably a broken trace on that unit; `STATUS_BUZZER_PIN 19` is correct.
 - **The TMC2209 UART bus does not answer.** Tested at multiple bauds and addresses with an

@@ -28,7 +28,7 @@ PROBES = [
     (":Gg#", "site longitude", True),
     (":GR#", "current RA", True),
     (":GD#", "current Dec", True),
-    (":GXE7#", "PEC steps per worm rotation (expect 64000)", True),
+    (":GXE7#", "PEC steps per worm rotation (expect 32000)", True),
     (":GXE8#", "PEC buffer seconds", True),
     (":GXE6#", "steps per sidereal second", True),
 ]

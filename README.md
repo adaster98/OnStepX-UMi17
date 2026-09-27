@@ -157,7 +157,7 @@ default. Nothing is copied over from the old settings.
 python3 tools/onstepx_probe.py /dev/ttyUSB0 9600
 ```
 
-Fifteen read-only commands, nothing moves. Expect `On-Step`, `10.28x`, `:GXE7#` → `64000`,
+Fifteen read-only commands, nothing moves. Expect `On-Step`, `10.28x`, `:GXE7#` → `32000`,
 and `:GU#` ending in `0` (no error).
 
 Then, with the mount at home (counterweight down, pointing at the pole), set the time and

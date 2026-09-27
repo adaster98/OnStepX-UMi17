@@ -90,16 +90,16 @@
 
 // If runtime axis settings are enabled changes in the section below will be ignored (disable in SWS or by wiping NV/EEPROM):
 // \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ 
-#define AXIS1_STEPS_PER_DEGREE 17777.77778 //  12800, n. Number of steps per degree:                                          <-Req'd
+#define AXIS1_STEPS_PER_DEGREE 8888.888889 //  12800, n. Number of steps per degree:                                          <-Req'd
                                           //         n = (stepper_steps * micro_steps * overall_gear_reduction)/360.0
 #define AXIS1_REVERSE                  ON //    OFF, ON Reverses movement direction, or reverse wiring instead to correct.   <-Often
 #define AXIS1_LIMIT_MIN              -180 //   -180, n. Where n= -90..-360 (degrees.) Minimum "Hour Angle" or Azimuth.        Adjust
 #define AXIS1_LIMIT_MAX               180 //    180, n. Where n=  90.. 360 (degrees.) Maximum "Hour Angle" or Azimuth.        Adjust
 #define AXIS1_LIMIT_SYNC              OFF //    OFF, n. Where n= 0..90 (degrees.) Allow sync/reset only within this +/-range. Option
 
-#define AXIS1_DRIVER_MICROSTEPS        64 //    OFF, n. Default microstep mode.                                              <-Req'd
-// No goto mode switch: the drivers stay at 64 usteps whatever M0/M1 say, so a switch to 16 made every
-// fast move a quarter of the distance counted. At 64 usteps the 40us HAL floor caps slews at 1.4 deg/s.
+#define AXIS1_DRIVER_MICROSTEPS        32 //    OFF, n. Default microstep mode.                                              <-Req'd
+// The TMC2209s read MS1/MS2 only when enabled, so a switch mid-move is ignored and the fast move covers
+// a fraction of the distance counted. A fixed 32 usteps with no goto switch lets 3 deg/s fit the HAL floor.
 #define AXIS1_DRIVER_MICROSTEPS_GOTO  OFF //    OFF, n. Goto microstep mode override. OFF uses _DRIVER_MICROSTEPS.            Option
 
 // for TMC2130, TMC5160, TMC2209, TMC2226 STEP/DIR driver models:
@@ -129,7 +129,7 @@
 
 // If runtime axis settings are enabled changes in the section below will be ignored (disable in SWS or by wiping NV/EEPROM):
 // \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
-#define AXIS2_STEPS_PER_DEGREE 17777.77778 //  12800, n. Number of steps per degree:                                          <-Req'd
+#define AXIS2_STEPS_PER_DEGREE 8888.888889 //  12800, n. Number of steps per degree:                                          <-Req'd
                                           //         n = (stepper_steps * micro_steps * overall_gear_reduction)/360.0
 // OnStep 4 drives the axis2 DIR pin with the opposite polarity, so the factory's DEC "reverse ON" is OFF here.
 // Tested: with ON, a south move from home tipped the scope east instead of west.
@@ -138,7 +138,7 @@
 #define AXIS2_LIMIT_MAX                90 //     90, n. Where n= 0..90 (degrees.) Maximum allowed Declination or Altitude.    Infreq
 #define AXIS2_LIMIT_SYNC              OFF //    OFF, n. Where n= 0..90 (degrees.) Allow sync/reset only within this +/-range. Option
 
-#define AXIS2_DRIVER_MICROSTEPS        64 //    OFF, n. Default microstep mode.                                              <-Req'd
+#define AXIS2_DRIVER_MICROSTEPS        32 //    OFF, n. Default microstep mode.                                              <-Req'd
 #define AXIS2_DRIVER_MICROSTEPS_GOTO  OFF //    OFF, n. Goto microstep mode override. OFF uses _DRIVER_MICROSTEPS.            Option
 
 // for TMC2130, TMC5160, TMC2209, TMC2226 STEP/DIR driver models:
@@ -226,12 +226,12 @@
 #define PARK_STATUS                   OFF //    OFF, signals with a HIGH or LOW state when successfully parked.               Option
 
 // PEC ------------------------------------------------------------ see https://onstep.groups.io/g/main/wiki/Configuration_Mount#PEC
-#define PEC_STEPS_PER_WORM_ROTATION  64000 //      0, n. Steps per worm rotation (0 disables else 720 sec buffer allocated.)  <-Req'd
+#define PEC_STEPS_PER_WORM_ROTATION  32000 //      0, n. Steps per worm rotation (0 disables else 720 sec buffer allocated.)  <-Req'd
                                           //         n = (AXIS1_STEPS_PER_DEGREE*360)/reduction_final_stage
 
 #define PEC_SENSE                     OFF //    OFF, HIGH. Senses the PEC signal rising edge or use LOW for falling edge.     Option
                                           //         Ignored in ALTAZM mode.
-// UMi 17 worm period is 64000/74.074 = 864 sec, so the stock 720 limit rejects the buffer and disables PEC.
+// UMi 17 worm period is 32000/37.037 = 864 sec, so the stock 720 limit rejects the buffer and disables PEC.
 #define PEC_BUFFER_SIZE_LIMIT         880 //    720, Seconds of PEC buffer allowed.                                           Infreq
 
 // TRACKING BEHAVIOUR ---------------------------------------- see https://onstep.groups.io/g/main/wiki/Configuration_Mount#TRACKING
@@ -243,8 +243,8 @@
 
 // SLEWING BEHAVIOUR ------------------------------------------ see https://onstep.groups.io/g/main/wiki/Configuration_Mount#SLEWING
 // OnStep presets run to 2x this value, so the base is half the intended ceiling.
-// 0.7 puts the "max" preset at 1.4 deg/s, the most 64 usteps allows with the 40us HAL floor.
-#define SLEW_RATE_BASE_DESIRED        0.7 //    1.0, n. Desired slew rate in deg/sec. Adjustable at run-time from            <-Req'd
+// 1.5 puts the "max" preset at 3.0 deg/s, the factory limit: 37.5us/step at 32 usteps.
+#define SLEW_RATE_BASE_DESIRED        1.5 //    1.0, n. Desired slew rate in deg/sec. Adjustable at run-time from            <-Req'd
                                           //         1/2 to 2x this rate, and as performace considerations require.
 #define SLEW_RATE_MEMORY               ON //    OFF, ON Remembers rates set across power cycles.                              Option
 #define SLEW_ACCELERATION_DIST        5.0 //    5.0, n, (degrees.) Approx. distance for acceleration (and deceleration.)      Adjust

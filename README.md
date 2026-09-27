@@ -45,7 +45,7 @@ short of soldering.
 
 ## What this fork changes
 
-Six files differ from upstream OnStepX 10.28x, plus a sketch rename:
+Eight files differ from upstream OnStepX 10.28x, plus a sketch rename:
 
 | File | Change |
 |---|---|
@@ -54,6 +54,7 @@ Six files differ from upstream OnStepX 10.28x, plus a sketch rename:
 | `src/lib/journal/Journal.{h,cpp}` | **new** — the flash journal |
 | `src/telescope/mount/Mount.{h,cpp}` | journal hooks, absolute position limits |
 | `src/telescope/mount/park/Park.command.cpp` | one line: stop tracking after unpark |
+| `src/telescope/mount/park/Park.cpp`, `goto/Goto.cpp` | under `SA_PERMISSIVE`, park and gotos wake the drivers from standby instead of refusing |
 
 Everything else is upstream, unmodified, so rebasing onto a newer OnStepX is a small job.
 

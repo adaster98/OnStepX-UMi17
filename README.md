@@ -284,10 +284,13 @@ build.
 
 ## Known limitations
 
-- **Slews top out at 1.4°/s**, not the factory 3°/s. The drivers stay at 64 microsteps whatever
-  the microstep pins say, so OnStepX cannot switch to a coarser mode for fast moves, and at 64
-  microsteps the ESP32's 40 µs step floor allows 1.4°/s. Earlier builds did switch, which made
-  every fast move a quarter of the distance counted; this is fixed.
+- **The drivers read their microstep pins only when enabled**, so OnStepX's usual switch to a
+  coarser mode for fast moves is ignored mid-move. Builds before 2026-09-27 relied on it, which
+  made every fast move a quarter of the distance counted. This build runs a fixed 32 microsteps
+  instead, which reaches the factory 3°/s.
+- **Upgrading from an older build:** send `:SXE7,32000#` once and power-cycle, or start fresh with
+  `:ENVRESET#`. The saved PEC worm length (64000) no longer matches 32 microsteps, and until it
+  does, PEC reports an init error and the mount refuses gotos and park.
 - **The buzzer does not work on one of my two boards.** A full GPIO sweep found no pin that
   drove it. Probably a broken trace on that unit; `STATUS_BUZZER_PIN 19` is correct.
 - **The TMC2209 UART bus does not answer.** Tested at multiple bauds and addresses with an

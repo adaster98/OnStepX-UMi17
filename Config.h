@@ -74,9 +74,9 @@
 #define AXIS1_LIMIT_SYNC              OFF //    OFF, n. Where n= 0..90 (degrees.) Allow sync/reset only within this +/-range. Option
 
 #define AXIS1_DRIVER_MICROSTEPS        64 //    OFF, n. Default microstep mode.                                              <-Req'd
-// 64 usteps at 17777.8 steps/deg needs 18.75us/step for 3 deg/s, but the ESP32 HAL floor is 40us.
-// Switching to 16 usteps during slews divides the required rate by 4, giving a 10us floor.
-#define AXIS1_DRIVER_MICROSTEPS_GOTO   16 //    OFF, n. Goto microstep mode override. OFF uses _DRIVER_MICROSTEPS.            Option
+// No goto mode switch: the drivers stay at 64 usteps whatever M0/M1 say, so a switch to 16 made every
+// fast move a quarter of the distance counted. At 64 usteps the 40us HAL floor caps slews at 1.4 deg/s.
+#define AXIS1_DRIVER_MICROSTEPS_GOTO  OFF //    OFF, n. Goto microstep mode override. OFF uses _DRIVER_MICROSTEPS.            Option
 
 // for TMC2130, TMC5160, TMC2209, TMC2226 STEP/DIR driver models:
 #define AXIS1_DRIVER_IHOLD            OFF //    OFF, n, (mA.) Current during standstill. OFF uses IRUN/2.0                    Option
@@ -115,7 +115,7 @@
 #define AXIS2_LIMIT_SYNC              OFF //    OFF, n. Where n= 0..90 (degrees.) Allow sync/reset only within this +/-range. Option
 
 #define AXIS2_DRIVER_MICROSTEPS        64 //    OFF, n. Default microstep mode.                                              <-Req'd
-#define AXIS2_DRIVER_MICROSTEPS_GOTO   16 //    OFF, n. Goto microstep mode override. OFF uses _DRIVER_MICROSTEPS.            Option
+#define AXIS2_DRIVER_MICROSTEPS_GOTO  OFF //    OFF, n. Goto microstep mode override. OFF uses _DRIVER_MICROSTEPS.            Option
 
 // for TMC2130, TMC5160, TMC2209, TMC2226 STEP/DIR driver models:
 #define AXIS2_DRIVER_IHOLD            OFF //    OFF, n, (mA.) Current during standstill. OFF uses IRUN/2.0                    Option
@@ -221,8 +221,8 @@
 
 // SLEWING BEHAVIOUR ------------------------------------------ see https://onstep.groups.io/g/main/wiki/Configuration_Mount#SLEWING
 // OnStep presets run to 2x this value, so the base is half the intended ceiling.
-// 1.5 puts the INDI "max" preset at exactly 3.0 deg/s, the factory limit; 3.0 here gave 5.6.
-#define SLEW_RATE_BASE_DESIRED        1.5 //    1.0, n. Desired slew rate in deg/sec. Adjustable at run-time from            <-Req'd
+// 0.7 puts the "max" preset at 1.4 deg/s, the most 64 usteps allows with the 40us HAL floor.
+#define SLEW_RATE_BASE_DESIRED        0.7 //    1.0, n. Desired slew rate in deg/sec. Adjustable at run-time from            <-Req'd
                                           //         1/2 to 2x this rate, and as performace considerations require.
 #define SLEW_RATE_MEMORY               ON //    OFF, ON Remembers rates set across power cycles.                              Option
 #define SLEW_ACCELERATION_DIST        5.0 //    5.0, n, (degrees.) Approx. distance for acceleration (and deceleration.)      Adjust

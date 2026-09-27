@@ -51,7 +51,7 @@ python3 onstepx_probe.py /dev/ttyUSB0 9600
 Health check. Sends fifteen read-only commands and prints the replies — identity, status
 flags, RTC, site, PEC values. **Nothing moves.** Run it first after any flash.
 
-Expect `On-Step`, `10.28w`, `:GXE7#` → `64000`, `:GXE8#` → `864`, and `:GU#` ending in `0`.
+Expect `On-Step`, `10.28x`, `:GXE7#` → `32000`, `:GXE8#` → `864`, and `:GU#` ending in `0`.
 
 | What you see | What it means |
 |---|---|

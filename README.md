@@ -141,7 +141,7 @@ Then power-cycle normally. First boot spends about 3 seconds erasing the journal
 python3 tools/onstepx_probe.py /dev/ttyUSB0 9600
 ```
 
-Fifteen read-only commands, nothing moves. Expect `On-Step`, `10.28x`, `:GXE7#` → `64000`,
+Fifteen read-only commands, nothing moves. Expect `On-Step`, `10.28x`, `:GXE7#` → `32000`,
 and `:GU#` ending in `0` (no error). `:GVT#` reports the build time compiled into the
 image, which is the only reliable way to know what is actually running.
 

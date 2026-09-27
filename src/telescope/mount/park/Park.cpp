@@ -93,6 +93,8 @@ CommandError Park::request() {
       DLF("WRN: Mount, park rejected because startup authority is not trusted");
       return CE_SLEW_ERR_UNSPECIFIED;
     }
+    // SA_PERMISSIVE: the axes cannot move while unpowered, so wake the drivers rather than refuse
+    if (!mount.isEnabled() && MOUNT_STARTUP_MODE == SA_PERMISSIVE) mount.enable(true);
     if (!mount.isEnabled())      return CE_SLEW_ERR_IN_STANDBY;
     if (goTo.state != GS_NONE)   return CE_SLEW_IN_MOTION;
     if (guide.state != GU_NONE)  return CE_SLEW_IN_MOTION;

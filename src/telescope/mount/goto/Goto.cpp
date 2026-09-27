@@ -243,7 +243,8 @@ CommandError Goto::requestSync(Coordinate coords, PierSideSelect pierSideSelect,
 // checks for valid target and determines pier side (Mount coordinate system)
 CommandError Goto::setTarget(Coordinate *coords, PierSideSelect pierSideSelect, bool isGoto) {
   CommandError e = validate();
-  if (e == CE_SLEW_ERR_IN_STANDBY && (encodersPresent || mount.isHome())) {
+  // SA_PERMISSIVE: the axes cannot move while unpowered, so standby is safe to leave from anywhere
+  if (e == CE_SLEW_ERR_IN_STANDBY && (encodersPresent || mount.isHome() || MOUNT_STARTUP_MODE == SA_PERMISSIVE)) {
     mount.enable(true);
     e = validate();
   }

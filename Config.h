@@ -149,6 +149,7 @@
 
 // The axes cannot move while unpowered (RA brake, 500:1 harmonic drive, no clutch), so trust at boot is safe.
 // SA_AUTO with coordinate memory would never trust a mount powered off while parked, refusing :hR#.
+// It also lets gotos and park wake the drivers from standby anywhere, e.g. after a power cut restore.
 #define MOUNT_STARTUP_MODE  SA_PERMISSIVE // ..AUTO, SA_STRICT, or SA_PERMISSIVE. Controls when startup trust is granted.     Option
                                           //         SA_AUTO keeps legacy immediate goto only when no absolute position source
                                           //         is present and coordinate memory is OFF.

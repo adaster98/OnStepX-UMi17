@@ -9,8 +9,8 @@ mid-session instead of needing a re-home.
 [`main`](https://github.com/adaster98/OnStepX-UMi17/tree/main) branch and its journal
 release instead.
 
-Apart from `Config.h`, the only source change is one line so unpark does not start
-tracking. The branch sits directly on the latest upstream.
+Apart from `Config.h`, the source changes are three small ones: unpark does not start
+tracking, and gotos and park wake the motor drivers from standby themselves. The branch sits directly on the latest upstream.
 
 The UMi 17 ships with Proxisky's OnStep 4.x build. This replaces it with OnStepX while
 leaving the factory bootloader and every factory partition offset untouched.
@@ -64,12 +64,13 @@ If the FRAM shows up anywhere other than `0x50`, add `#define NV_I2C_ADDRESS 0x.
 
 ## What this fork changes
 
-Two files differ from upstream OnStepX 10.28x, plus a sketch rename:
+Four files differ from upstream OnStepX 10.28x, plus a sketch rename:
 
 | File | Change |
 |---|---|
 | `Config.h` | UMi 17 pin map, 500:1 ratio, slew limits, FRAM and coordinate memory |
 | `src/telescope/mount/park/Park.command.cpp` | one line: stop tracking after unpark |
+| `src/telescope/mount/park/Park.cpp`, `goto/Goto.cpp` | under `SA_PERMISSIVE`, park and gotos wake the drivers from standby instead of refusing |
 
 Everything else is upstream, unmodified, so rebasing onto a newer OnStepX is a small job.
 
@@ -305,7 +306,7 @@ build.
 GPL v3, inherited from OnStepX. See [LICENSE](LICENSE).
 
 OnStepX is by **Howard Dutton** — <https://github.com/hjd1964/OnStepX>. Nearly all of the
-code here is his; this branch is a configuration, a partition tool and one line.
+code here is his; this branch is a configuration, a partition tool and three small patches.
 Bugs you find here are almost certainly mine, not upstream's, so report them here first.
 
 Not affiliated with or endorsed by Proxisky.
